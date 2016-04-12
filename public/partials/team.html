@@ -1,0 +1,87 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-8">
+
+    <h1> {{team.Name}} <small>{{team.Description}}</small></h1>
+
+      <uib-tabset active="active">
+        <uib-tab index="0" heading="Home">
+
+          <div ng-show="!editTeam">
+            <a class="pull-right"  ng-click="editTeam = true">Edit</a>
+            <div ng-bind-html="team.Body | to_trusted"></div>
+          </div>
+          <div ng-show="editTeam">
+            <textarea ng-model="team.Body" style="height: 500px" class="form-control"></textarea>
+            <button ng-click="saveTeam(); editTeam = false" class="btn btn-primary">Save</button>
+          </div>
+        </uib-tab>
+        <uib-tab index="1" heading="Members">
+          <br>
+          <div ng-repeat="member in members" style="width: 250px; text-align: center; height: 400px; float: left">
+            <img style="width: 200px; height: 200px" ng-src="{{member.ProfilePic}}" class="img-circle">
+            <br>
+
+            <strong>{{member.Name}}</strong>
+            <p>{{member.Description}}</p>
+          </div>
+        </uib-tab>
+        <uib-tab index="2" heading="Activity">
+
+          <div ng-repeat="event in events">
+            <div ng-if="event.Type == 'visit'">
+              <p> {{event.Author}} is looking at <a href="{{event.Data}}">{{event.Data}}</a>
+            <small class="pull-right">{{event.TS | fromNow}}</small> </p>
+            </div>
+            <div ng-if="event.Type == 'comment'">
+              <p> {{event.Author}} left a comment on <a href="{{event.Data}}">{{event.Data}}</a>             <small class="pull-right">{{event.TS | fromNow}}</small> </p>
+            </div>
+            <div ng-if="event.Type == 'attachment'">
+              <p> {{event.Author}} attached a document <a href="{{event.Data}}">{{event.Data}}</a>            <small class="pull-right">{{event.TS | fromNow}}</small> </p>
+            </div>
+          </div>
+          
+        </uib-tab>
+        <uib-tab index="3" heading="Attachments">
+          <!-- {{attachments[0]}} -->
+          <div ng-repeat="attachment in attachments" style="height: 200px; display: inline-block; width: 200px; border: 1px solid; text-align: center; margin: 10px">
+            
+            <span style="font-size: 128px; padding: 10px" class="glyphicon glyphicon-paperclip" aria-hidden="true"></span> <br>
+
+            <a href="{{attachment.Link}}">{{attachment.Title}}</a>
+            
+          </div>
+        </uib-tab>
+      </uib-tabset>
+  
+    </div>
+
+    <div class="col-sm-4">
+      <h3> Chat </h3>
+
+        <ul id="markit-comment" class="list-group">
+
+          <li ng-repeat="chat in chats" class="list-group-item" >
+            <div class="row">
+              <div class="col-xs-2" style="padding: 0 0 0 5px">
+                <img class="pull-left" ng-src="{{chat.ProfilePic}}" class="img-rounded" style="width: 100%">
+              </div>
+              <div class="col-xs-10">
+                 <p>{{chat.Author}}<small class="pull-right"> {{chat.TS | fromNow}} </small></p>
+                 <p>{{chat.Message}}</p> 
+              </div>
+            </div> 
+           </li>
+        <li class="list-group-item">
+          <div class="input-group">
+            <input ng-model="newMessage" type="text" class="form-control" placeholder="Message">
+            <span class="input-group-btn">
+            <button ng-click="saveChat()" class="btn btn-default" type="button">Reply</button>
+            </span>
+          </div>
+          <span class="clearfix"></span> 
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
