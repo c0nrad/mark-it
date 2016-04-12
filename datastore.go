@@ -24,6 +24,8 @@ type User struct {
 	ID bson.ObjectId `bson:"_id,omitempty"`
 	TS time.Time
 
+	Team bson.ObjectId
+
 	Name     string
 	Email    string
 	Password string
@@ -75,9 +77,10 @@ type Event struct {
 
 type Comment struct {
 	ID     bson.ObjectId `bson:"_id,omitempty"`
-	Parent int
-	User   int
-	TS     time.Time
+	Parent bson.ObjectId `bson:"parent,omitempty"`
+	User   bson.ObjectId `bson:"user,omitempty"`
+
+	TS time.Time
 
 	Author     string
 	ProfilePic string
@@ -189,6 +192,14 @@ func UpdateTeam(team Team) error {
 	return err
 }
 
+func UpdateUserTeam(userId, teamId bson.ObjectId) error {
+	session := Session.Copy()
+	defer session.Close()
+
+	err := session.DB(Database).C(UsersCollection).UpdateId(userId, bson.M{"$set": bson.M{"team": teamId}})
+	return err
+}
+
 func GetComments() ([]Comment, error) {
 	session := Session.Copy()
 	defer session.Close()
@@ -246,19 +257,19 @@ func GetUsersByTeam(teamId string) ([]User, error) {
 func AddFakeData() {
 	Session.DB(Database).DropDatabase()
 
-	var Users = []User{
-		User{bson.NewObjectId(), time.Now(), "Stuart Larsen", "c0nrad@c0nrad.io", "a", "https://avatars3.githubusercontent.com/u/1901151?v=3&s=460", "Stuart is the lead programmer at Mark.It. He manages the technical day to day activites"},
-		User{bson.NewObjectId(), time.Now(), "Katie Honadle", "katie.honadle@gmail.com", "a", "https://static.wixstatic.com/media/a905fd_76d88cea66d64e56a47221b59b381f21.jpg/v1/fill/w_870,h_836,al_c,q_85,usm_0.66_1.00_0.01/a905fd_76d88cea66d64e56a47221b59b381f21.jpg", "Katie has a wealth of experience in Marketing, Social Media, and Human Resources. She's currently VP of Marketing, Product, and Design at Mark.It."},
-	}
-	for _, user := range Users {
-		Session.DB(Database).C(UsersCollection).Insert(user)
-	}
-
 	var Teams = []Team{
 		Team{bson.NewObjectId(), time.Now(), "Party Planning Committee", "partypartyparty", "Swag"},
 	}
 	for _, team := range Teams {
 		Session.DB(Database).C(TeamsCollection).Insert(team)
+	}
+
+	var Users = []User{
+		User{bson.NewObjectId(), time.Now(), Teams[0].ID, "Stuart Larsen", "c0nrad@c0nrad.io", "a", "https://avatars3.githubusercontent.com/u/1901151?v=3&s=460", "Stuart is the lead programmer at Mark.It. He manages the technical day to day activites"},
+		User{bson.NewObjectId(), time.Now(), Teams[0].ID, "Katie Honadle", "katie.honadle@gmail.com", "a", "https://static.wixstatic.com/media/a905fd_76d88cea66d64e56a47221b59b381f21.jpg/v1/fill/w_870,h_836,al_c,q_85,usm_0.66_1.00_0.01/a905fd_76d88cea66d64e56a47221b59b381f21.jpg", "Katie has a wealth of experience in Marketing, Social Media, and Human Resources. She's currently VP of Marketing, Product, and Design at Mark.It."},
+	}
+	for _, user := range Users {
+		Session.DB(Database).C(UsersCollection).Insert(user)
 	}
 
 	var Chats = []Chat{

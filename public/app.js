@@ -58,7 +58,7 @@ app.controller('LoginController', function($scope, User, $state) {
 
   $scope.login = function() {
     $scope.user.$login(function() {
-      $state.go('home')
+      $state.go('teams')
     })
   }
 })

@@ -54,7 +54,7 @@ $( "*" ).on( "dblclick", function(event) {
 
 
 function buildComments(x, y, comments, me) {
-  out ='<ul id="markit-comment" class="list-group" style=" z-index: 999; width: 400px; position: absolute; top: '+x+'px; left: '+y+'px">'
+  out ='<ul id="markit-comment" class="list-group" style=" z-index: 999; width: 400px; position: absolute; top: '+x+'px; left: '+y+'px; color: black">'
 
   for (var i = 0; i < comments.length; i++) {
     var comment = comments[i];
@@ -67,13 +67,7 @@ function buildComments(x, y, comments, me) {
     '<p>'+comment.Body+'</p>'+
     '</li>'
   }
-  return out +
-  // <li class="list-group-item">
-  //   <img class="pull-left" src="https://static.wixstatic.com/media/a905fd_76d88cea66d64e56a47221b59b381f21.jpg/v1/fill/w_870,h_836,al_c,q_85,usm_0.66_1.00_0.01/a905fd_76d88cea66d64e56a47221b59b381f21.jpg" style="width: 54px; height:54 px; margin-right: 10px">
-  //   <p>Katie Honadle<small> 30 minutes ago</small></p>
-  //   <p>That looks awesome! Could we get the title in purple?</p>  
-  // </li>
-  '<li class="list-group-item" style="min-height: 64px">'+
+  return out + '<li class="list-group-item" style="min-height: 64px">'+
       '<img class="pull-left" src="'+ me.ProfilePic +'" style="width:54px; height:54 px; margin-right: 10px">'+
       '<div class="input-group">' +
         '<input id="markit-input" type="text" class="form-control" placeholder="Message">' +

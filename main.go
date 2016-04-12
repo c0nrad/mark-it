@@ -19,7 +19,7 @@ var SessionName = "markit-session"
 
 func main() {
 	ConnectToMongo()
-	// AddFakeData()
+	AddFakeData()
 
 	router := mux.NewRouter()
 	router.HandleFunc("/api/me", GetMeHandler)
@@ -27,9 +27,6 @@ func main() {
 	router.HandleFunc("/api/users/register", RegisterHandler).Methods("POST")
 
 	router.HandleFunc("/api/team", GetTeamsHandler).Methods("GET")
-	router.HandleFunc("/api/team/{teamId}", GetTeamHandler).Methods("GET")
-
-	router.HandleFunc("/api/team/{teamId}", UpdateTeamHandler).Methods("PUT")
 
 	router.HandleFunc("/api/team/{teamId}/members", GetMembersHandler).Methods("GET")
 
@@ -42,7 +39,10 @@ func main() {
 	router.HandleFunc("/api/team/{teamId}/attachments", GetAttachmentsHandler)
 
 	router.HandleFunc("/api/team/{teamId}/events", GetEventsHandler).Methods("GET")
-	router.HandleFunc("/api/team/{teamId}/events", NewEventHandler).Methods("POST")
+	router.HandleFunc("/api/team/events", NewEventHandler).Methods("POST")
+
+	router.HandleFunc("/api/team/{teamId}", GetTeamHandler).Methods("GET")
+	router.HandleFunc("/api/team/{teamId}", UpdateTeamHandler).Methods("PUT")
 
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("./public/")))
 
@@ -144,6 +144,8 @@ func NewCommentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newComment.TS = time.Now()
+
+	newComment.User = currentUser.ID
 	newComment.ProfilePic = currentUser.ProfilePic
 	newComment.Author = currentUser.Name
 
@@ -151,13 +153,16 @@ func NewCommentHandler(w http.ResponseWriter, r *http.Request) {
 
 	comment, err := InsertComment(newComment)
 	if err != nil {
+		fmt.Println("HERE")
 		http.Error(w, err.Error(), 400)
 		return
 	}
 
-	newEvent := Event{TS: time.Now(), Author: comment.Author, Type: "comment", Data: comment.Body}
+	newEvent := Event{TS: time.Now(), Team: currentUser.Team, Author: comment.Author, Type: "comment", Data: comment.Url}
 	_, err = InsertEvent(newEvent)
 	if err != nil {
+		fmt.Println("HERE2")
+
 		http.Error(w, err.Error(), 400)
 		return
 	}
@@ -182,6 +187,7 @@ func NewEventHandler(w http.ResponseWriter, r *http.Request) {
 
 	newEvent.TS = time.Now()
 	newEvent.Author = currentUser.Name
+	newEvent.Team = currentUser.Team
 	// event.User = currentUser.ID
 
 	event, err := InsertEvent(newEvent)
@@ -206,11 +212,22 @@ func GetMeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetTeamHandler(w http.ResponseWriter, r *http.Request) {
+	user, err := GetCurrentUser(r)
+	if err != nil {
+		http.Error(w, "not logged in", 400)
+		return
+	}
 
 	vars := mux.Vars(r)
 	teamId := vars["teamId"]
 
 	team, err := GetTeamById(teamId)
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+
+	err = UpdateUserTeam(user.ID, team.ID)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
 		return
